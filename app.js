@@ -74,5 +74,5 @@ app.listen(PORT, async () => {
             await SDK.authenticate(json);
         }
     }
-    open('http://localhost:' + PORT + '/');
+    // open('http://localhost:' + PORT + '/');
 });

@@ -23,15 +23,25 @@ router.get('/:id', async (req, res) => {
         const app = await SDK.getDataStack().App(req.params.id);
         const dataServices = await app.ListDataServices({ select: 'name,status,deployment,app,deploymentName', count: -1, sort: 'name', filter: { app: req.params.id } });
         const service = dataServices.map(e => e.data);
-        // let promises = service.map(async (e) => {
-        //     const records = await k8sUtils.getPods(global.config.namespace, e.deploymentName);
-        //     if (records.length > 0) {
-        //         e.podName = records.map(e => e.NAME).join(', ');
-        //     }
-        //     return e;
-        // });
-        // await Promise.all(promises);
         res.status(200).json({ app: app.app, namespace: global.config.namespace, dataServices: service });
+    } catch (err) {
+        logger.error(err);
+        res.status(500).json({
+            message: err.message
+        });
+    }
+});
+
+router.get('/:id/deployment/:dataService', async (req, res) => {
+    try {
+        const app = await SDK.getDataStack().App(req.params.id);
+        const dataService = await app.DataService(req.params.dataService);
+        const yamls = await dataService.Yamls();
+        dataService.yamls = yamls;
+        const records = await k8sUtils.getPods(global.config.namespace + '-' + dataService.data.deploymentNamespace, dataService.data.deploymentName);
+        dataService.pods = records;
+        dataService.namespace = global.config.namespace;
+        res.status(200).json(dataService);
     } catch (err) {
         logger.error(err);
         res.status(500).json({

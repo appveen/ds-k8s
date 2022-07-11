@@ -7,7 +7,7 @@ async function getPods(namespace, deployment) {
         let cmd;
         if (namespace) {
             if (deployment) {
-                cmd = `kubectl get pods -n ${namespace} ${deployment}`;
+                cmd = `kubectl get pods -n ${namespace} --selector=app=${deployment}`;
             } else {
                 cmd = `kubectl get pods -n ${namespace}`;
             }
@@ -19,6 +19,13 @@ async function getPods(namespace, deployment) {
     } catch (err) {
 
     }
+}
+
+async function deletePod(namespace, podName) {
+    if (!namespace || !podName) {
+        throw new Error('Namespace and Pod Name is Requried');
+    }
+    await runCommand(`kubectl delete pod -n ${namespace} ${podName}`);
 }
 
 
@@ -42,6 +49,16 @@ async function getDeployments(namespace, deployment) {
     } catch (err) {
 
     }
+}
+
+async function scaleDeployment(namespace, deployment, scaleValue) {
+    if (!scaleValue) {
+        scaleValue = 0;
+    }
+    if (!namespace || !deployment) {
+        throw new Error('Namespace and Deployment is Requried');
+    }
+    await runCommand(`kubectl scale deploy -n ${namespace} ${deployment} --replicas=${scaleValue}`);
 }
 
 async function getServices(namespace, deployment) {
@@ -95,11 +112,31 @@ function runCommand(cmd) {
     });
 }
 
+function runCommandRaw(cmd) {
+    return new Promise((resolve, reject) => {
+        try {
+            const rows = [];
+            const cp = exec(cmd);
+            const readInterface = rl.createInterface(cp.stdout);
+            readInterface.on('line', function (line) {
+                rows.push(line);
+            });
+            readInterface.on('close', function () {
+                resolve(rows.join('\n'));
+            });
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
 
 
 module.exports = {
     getPods,
+    deletePod,
     getDeployments,
+    scaleDeployment,
     getServices,
-    runCommand
+    runCommand,
+    runCommandRaw
 };
