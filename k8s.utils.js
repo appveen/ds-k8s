@@ -7,12 +7,12 @@ async function getPods(namespace, deployment) {
         let cmd;
         if (namespace) {
             if (deployment) {
-                cmd = `kubectl get pods -n ${namespace} --selector=app=${deployment}`;
+                cmd = `kubectl --insecure-skip-tls-verify get pods -n ${namespace} --selector=app=${deployment}`;
             } else {
-                cmd = `kubectl get pods -n ${namespace}`;
+                cmd = `kubectl --insecure-skip-tls-verify get pods -n ${namespace}`;
             }
         } else {
-            cmd = `kubectl get pods --all-namespaces`;
+            cmd = `kubectl --insecure-skip-tls-verify get pods --all-namespaces`;
         }
         const rows = await runCommand(cmd);
         return rows;
@@ -25,7 +25,7 @@ async function deletePod(namespace, podName) {
     if (!namespace || !podName) {
         throw new Error('Namespace and Pod Name is Requried');
     }
-    await runCommand(`kubectl delete pod -n ${namespace} ${podName}`);
+    await runCommand(`kubectl --insecure-skip-tls-verify delete pod -n ${namespace} ${podName}`);
 }
 
 
@@ -34,12 +34,12 @@ async function getDeployments(namespace, deployment) {
         let cmd;
         if (namespace) {
             if (deployment) {
-                cmd = `kubectl get deploy -n ${namespace} ${deployment}`;
+                cmd = `kubectl --insecure-skip-tls-verify get deploy -n ${namespace} ${deployment}`;
             } else {
-                cmd = `kubectl get deploy -n ${namespace}`;
+                cmd = `kubectl --insecure-skip-tls-verify get deploy -n ${namespace}`;
             }
         } else {
-            cmd = `kubectl get deploy --all-namespaces`;
+            cmd = `kubectl --insecure-skip-tls-verify get deploy --all-namespaces`;
         }
         const rows = await runCommand(cmd);
         if (deployment) {
@@ -58,7 +58,7 @@ async function scaleDeployment(namespace, deployment, scaleValue) {
     if (!namespace || !deployment) {
         throw new Error('Namespace and Deployment is Requried');
     }
-    await runCommand(`kubectl scale deploy -n ${namespace} ${deployment} --replicas=${scaleValue}`);
+    await runCommand(`kubectl --insecure-skip-tls-verify scale deploy -n ${namespace} ${deployment} --replicas=${scaleValue}`);
 }
 
 async function getServices(namespace, deployment) {
@@ -66,12 +66,12 @@ async function getServices(namespace, deployment) {
         let cmd;
         if (namespace) {
             if (deployment) {
-                cmd = `kubectl get svc -n ${namespace} ${deployment}`;
+                cmd = `kubectl --insecure-skip-tls-verify get svc -n ${namespace} ${deployment}`;
             } else {
-                cmd = `kubectl get svc -n ${namespace}`;
+                cmd = `kubectl --insecure-skip-tls-verify get svc -n ${namespace}`;
             }
         } else {
-            cmd = `kubectl get svc --all-namespaces`;
+            cmd = `kubectl --insecure-skip-tls-verify get svc --all-namespaces`;
         }
         const rows = await runCommand(cmd);
         if (deployment) {

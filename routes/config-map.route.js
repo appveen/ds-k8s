@@ -9,7 +9,7 @@ const logger = log4js.getLogger('data-service.controller');
 
 router.get('/', async (req, res) => {
     try {
-        const rows = await k8sUtils.runCommand(`kubectl get cm -n ${global.config.namespace}`);
+        const rows = await k8sUtils.runCommand(`kubectl --insecure-skip-tls-verify get cm -n ${global.config.namespace}`);
         res.status(200).json({ rows, namespace: global.config.namespace });
     } catch (err) {
         logger.error(err);
@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     try {
-        const content = execSync(`kubectl get cm -n ${global.config.namespace} ${req.params.id} -o json`).toString('utf-8');
+        const content = execSync(`kubectl --insecure-skip-tls-verify get cm -n ${global.config.namespace} ${req.params.id} -o json`).toString('utf-8');
         const configJSON = JSON.parse(content);
         res.status(200).json(configJSON);
     } catch (err) {
