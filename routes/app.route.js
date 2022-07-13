@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const log4js = require('log4js');
+const { exec } = require('child_process');
 
 const SDK = require('../sdk');
 const k8sUtils = require('../k8s.utils');
@@ -42,6 +43,35 @@ router.get('/:id/deployment/:dataService', async (req, res) => {
         dataService.pods = records;
         dataService.namespace = global.config.namespace;
         res.status(200).json(dataService);
+    } catch (err) {
+        logger.error(err);
+        res.status(500).json({
+            message: err.message
+        });
+    }
+});
+
+
+router.get('/:id/deployment/:dataService/:pod/logs', async (req, res) => {
+    try {
+        const tail = req.query.tail;
+        const podName = req.params.pod;
+        const app = await SDK.getDataStack().App(req.params.id);
+        const dataService = await app.DataService(req.params.dataService);
+        const deploymentNamespace = dataService.data.deploymentNamespace;
+        const namespace = global.config.namespace + '-' + deploymentNamespace;
+        let cmd = `kubectl --insecure-skip-tls-verify logs -n ${namespace} ${podName}`;
+        if (tail) {
+            cmd += ` --tail ${tail}`;
+        }
+        const cp = exec(cmd);
+        cp.on('close', function () {
+            logger.info('Ended in close');
+            res.write(`</pre><script>setTimeout(function(){window.scrollTo(0, document.body.scrollHeight)},500);setTimeout(function(){location.reload();},10000);</script></body>`);
+            res.end();
+        });
+        res.write(`<head><title>${podName} Logs</title></head><body><pre>`);
+        exec(cmd).stdout.pipe(res);
     } catch (err) {
         logger.error(err);
         res.status(500).json({
