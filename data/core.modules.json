@@ -1,0 +1,32 @@
+[
+    {
+        "name": "SM"
+    },
+    {
+        "name": "USER"
+    },
+    {
+        "name": "GW"
+    },
+    {
+        "name": "BM"
+    },
+    {
+        "name": "MON"
+    },
+    {
+        "name": "NE"
+    },
+    {
+        "name": "PROXY"
+    },
+    {
+        "name": "COMMON"
+    },
+    {
+        "name": "CACHE"
+    },
+    {
+        "name": "MESSAGING"
+    }
+]
