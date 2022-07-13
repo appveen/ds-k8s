@@ -1,6 +1,8 @@
+const log4js = require('log4js');
 const { exec } = require('child_process');
 const rl = require('readline');
 
+const logger = log4js.getLogger('k8s.utils');
 
 async function getPods(namespace, deployment) {
     try {
@@ -17,7 +19,8 @@ async function getPods(namespace, deployment) {
         const rows = await runCommand(cmd);
         return rows;
     } catch (err) {
-
+        logger.error(err);
+        throw err;
     }
 }
 
@@ -47,7 +50,8 @@ async function getDeployments(namespace, deployment) {
         }
         return rows;
     } catch (err) {
-
+        logger.error(err);
+        throw err;
     }
 }
 
@@ -79,7 +83,8 @@ async function getServices(namespace, deployment) {
         }
         return rows;
     } catch (err) {
-
+        logger.error(err);
+        throw err;
     }
 }
 
@@ -89,6 +94,7 @@ function runCommand(cmd) {
         try {
             let headers;
             const rows = [];
+            const errors = [];
             const cp = exec(cmd);
             const readInterface = rl.createInterface(cp.stdout);
             readInterface.on('line', function (line) {
@@ -104,9 +110,23 @@ function runCommand(cmd) {
                 }
             });
             readInterface.on('close', function () {
-                resolve(rows);
+                if (rows.length == 0 && errors.length > 0) {
+                    reject(new Error(errors.join('\n')));
+                } else {
+                    resolve(rows);
+                }
             });
+            cp.stderr.on('error', function (err) {
+                reject(err);
+            });
+            cp.stderr.on('data', function (err) {
+                errors.push(err);
+            })
+            cp.on('error', function (err) {
+                reject(err);
+            })
         } catch (err) {
+            logger.error(err);
             reject(err);
         }
     });
